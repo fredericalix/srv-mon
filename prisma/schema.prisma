@@ -1,0 +1,194 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle pour les utilisateurs
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  password         String
+  name             String
+  role             UserRole  @default(USER)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  groupMemberships GroupUser[]
+  createdServers   Server[]  @relation("CreatedBy")
+}
+
+// Types d'utilisateurs
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+// Modèle pour les groupes
+model Group {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  members     GroupUser[]
+  servers     Server[]
+  probes      Probe[]    @relation("GroupProbes")
+  notifications NotificationConfig[]
+}
+
+// Relation many-to-many entre utilisateurs et groupes
+model GroupUser {
+  id        String    @id @default(uuid())
+  userId    String
+  groupId   String
+  role      GroupRole @default(MEMBER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+// Types de rôles dans un groupe
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+// Types de serveurs
+enum ServerType {
+  DATABASE
+  APPLICATION
+  MAIL
+  OTHER
+}
+
+// Modèle pour les serveurs
+model Server {
+  id          String     @id @default(uuid())
+  name        String
+  type        ServerType
+  description String?
+  createdById String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  createdBy   User       @relation("CreatedBy", fields: [createdById], references: [id])
+  groups      Group[]
+  probes      Probe[]
+}
+
+// Types de sondes
+enum ProbeType {
+  HTTP
+  WEBHOOK
+}
+
+// Statuts de sonde
+enum ProbeStatus {
+  OK
+  WARNING
+  ERROR
+  UNKNOWN
+}
+
+// Modèle pour les sondes
+model Probe {
+  id              String       @id @default(uuid())
+  name            String
+  type            ProbeType
+  serverId        String
+  server          Server       @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  status          ProbeStatus  @default(UNKNOWN)
+  lastCheck       DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  httpConfig      HttpProbe?
+  webhookConfig   WebhookProbe?
+  groups          Group[]      @relation("GroupProbes")
+  alertHistory    AlertHistory[]
+}
+
+// Configuration pour sondes HTTP
+model HttpProbe {
+  id                String     @id @default(uuid())
+  probeId           String     @unique
+  probe             Probe      @relation(fields: [probeId], references: [id], onDelete: Cascade)
+  url               String
+  method            String     @default("GET")
+  headers           Json?
+  body              String?
+  expectedStatus    Int?
+  expectedKeyword   String?
+  timeout           Int        @default(30000) // en millisecondes
+  checkInterval     Int        @default(300)   // en secondes
+  lastResponseTime  Int?       // en millisecondes
+  lastStatusCode    Int?
+  lastResponseBody  String?
+}
+
+// Configuration pour sondes Webhook
+model WebhookProbe {
+  id              String     @id @default(uuid())
+  probeId         String     @unique
+  probe           Probe      @relation(fields: [probeId], references: [id], onDelete: Cascade)
+  webhookToken    String     @unique @default(uuid())
+  lastPayload     Json?
+  expectedPayload Json?
+}
+
+// Types de canaux de notification
+enum NotificationChannelType {
+  EMAIL
+  WEBHOOK
+}
+
+// Configuration des notifications
+model NotificationConfig {
+  id            String                  @id @default(uuid())
+  name          String
+  groupId       String
+  group         Group                   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  type          NotificationChannelType
+  emailConfig   EmailNotification?
+  webhookConfig WebhookNotification?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+}
+
+// Configuration pour notifications par email
+model EmailNotification {
+  id                  String             @id @default(uuid())
+  notificationConfigId String             @unique
+  notificationConfig  NotificationConfig @relation(fields: [notificationConfigId], references: [id], onDelete: Cascade)
+  recipients          String[]
+}
+
+// Configuration pour notifications par webhook
+model WebhookNotification {
+  id                  String             @id @default(uuid())
+  notificationConfigId String             @unique
+  notificationConfig  NotificationConfig @relation(fields: [notificationConfigId], references: [id], onDelete: Cascade)
+  url                 String
+  headers             Json?
+  payload             Json?
+}
+
+// Historique des alertes
+model AlertHistory {
+  id        String       @id @default(uuid())
+  probeId   String
+  probe     Probe        @relation(fields: [probeId], references: [id], onDelete: Cascade)
+  status    ProbeStatus
+  message   String?
+  createdAt DateTime     @default(now())
+  resolved  Boolean      @default(false)
+  resolvedAt DateTime?
+}

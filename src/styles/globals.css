@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-rgb: 10, 10, 10;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background-color: rgb(var(--background-rgb));
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+  }
+  
+  .btn-success {
+    @apply bg-success text-white hover:bg-green-600 focus:ring-green-500;
+  }
+  
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-red-600 focus:ring-red-500;
+  }
+  
+  .btn-warning {
+    @apply bg-warning text-white hover:bg-amber-600 focus:ring-amber-500;
+  }
+  
+  .input {
+    @apply px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 block w-full;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6;
+  }
+  
+  .server-status-ok {
+    @apply fill-success text-success;
+  }
+  
+  .server-status-warning {
+    @apply fill-warning text-warning;
+  }
+  
+  .server-status-error {
+    @apply fill-danger text-danger;
+  }
+  
+  .server-status-unknown {
+    @apply fill-gray-400 text-gray-400;
+  }
+}
