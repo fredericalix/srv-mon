@@ -2,8 +2,6 @@
 
 SrvMon est une application web moderne et intuitive de surveillance de serveurs, conçue pour offrir une visibilité en temps réel sur l'état de vos serveurs et services. Développée avec Next.js, Prisma et TailwindCSS, elle permet de gérer facilement vos serveurs, configurer des alertes et collaborer en équipe.
 
-![Dashboard de SrvMon](https://via.placeholder.com/1200x600?text=SrvMon+Dashboard)
-
 ## 🌟 Fonctionnalités principales
 
 - **Surveillance en temps réel** : Suivi de la disponibilité, des temps de réponse et des performances de vos serveurs
@@ -20,19 +18,19 @@ SrvMon est une application web moderne et intuitive de surveillance de serveurs,
 - **Backend** : API Routes Next.js, Prisma ORM
 - **Base de données** : PostgreSQL
 - **Authentification** : NextAuth.js
-- **Déploiement** : Docker (optionnel)
+- **Déploiement** : Docker, Docker Compose
 
 ## 📋 Prérequis
 
-- Node.js (v18 ou supérieur)
-- PostgreSQL
+- Node.js (v18 ou supérieur) ou Docker
+- PostgreSQL (optionnel si vous utilisez Docker)
 - npm ou yarn
 
 ## 🚀 Installation
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/votre-username/srv-mon.git
+git clone https://github.com/fredericalix/srv-mon.git
 cd srv-mon
 
 # Installer les dépendances
@@ -91,6 +89,8 @@ srv-mon/
 │   └── utils/             # Fonctions utilitaires
 ├── .env                   # Variables d'environnement
 ├── .env-example           # Exemple de fichier .env
+├── Dockerfile             # Configuration Docker
+├── docker-compose.yml     # Configuration Docker Compose
 └── ...                    # Autres fichiers de configuration
 ```
 
@@ -116,6 +116,31 @@ docker build -t srv-mon .
 docker run -p 3000:3000 --env-file .env srv-mon
 ```
 
+### Avec Docker Compose (recommandé)
+
+Pour un déploiement complet incluant l'application, la base de données PostgreSQL et pgAdmin :
+
+```bash
+# Démarrer tous les services
+docker-compose up -d
+
+# Voir les logs
+docker-compose logs -f
+
+# Arrêter tous les services
+docker-compose down
+```
+
+#### Services inclus dans le Docker Compose :
+
+- **SrvMon Application** : Accessible sur http://localhost:3000
+- **PostgreSQL** : Base de données accessible sur le port 5432
+- **pgAdmin** : Interface d'administration de la base de données accessible sur http://localhost:5050
+  - Email par défaut : admin@example.com
+  - Mot de passe par défaut : admin
+
+> ⚠️ **Sécurité** : Avant tout déploiement en production, modifiez les identifiants par défaut dans le fichier `docker-compose.yml`
+
 ### Sur un serveur
 
 Vous pouvez déployer l'application sur Vercel, Netlify, ou tout autre hébergeur compatible avec Next.js.
@@ -129,17 +154,9 @@ N'oubliez pas de configurer les variables d'environnement sur votre plateforme d
 - Journalisation des actions importantes
 - Chiffrement des mots de passe et des données sensibles
 
-## 🔄 CI/CD
-
-Ce projet est configuré pour l'intégration continue avec GitHub Actions :
-- Tests automatiques
-- Vérification du linting
-- Vérification des types TypeScript
-- Construction automatique lors des pull requests
-
 ## 📜 Licence
 
-[MIT](LICENSE)
+[GPL-3.0](LICENSE)
 
 ## 👥 Contribution
 
